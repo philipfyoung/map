@@ -1,0 +1,96 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+@mixin default_font {
+  font: {
+    family: Verdana;
+  };
+}
+
+/* Responsive Width Example with arguments */
+/* Mixins can take arguments SassScript values as arguments, 
+   which are given when the mixin is included and made available within the mixin as variables.
+    When defining a mixin, the arguments are written as variable names separated by commas, 
+    all in parentheses after the name. 
+    Then when including the mixin, values can be passed in in the same manner
+    
+    Arguments are optional and only defined within the scope of the mixin.
+    @mixin <name>($<argument>, $<other_argument>, ...){...}
+*/
+@mixin responsive_width($width) {
+  @if $width == big {
+    @media (min-width: 64.375em) { @content; }
+  }
+  @else if $width == medium {
+    @media (min-width: 40em) { @content; }
+  }
+  @else if $width == small {
+    @media (min-width: 20em)  { @content; }
+  }
+}
+html {
+  @include default_font;
+}
+
+@mixin pad{
+  padding: 10px;
+}
+
+/* Make the background of .main change with browser width */
+@include responsive_width(small){   
+  body { 
+    background-color: pink; 
+    color: green;
+  }
+}
+@include responsive_width(medium){  
+  body { 
+    background-color: orange; 
+    color: red; }
+}
+@include responsive_width(big){    
+  body { 
+    background-color: yellow;
+    color: gray;
+  }
+}
+
+/* Mixins can include other mixins to extend functionality and reuse code*/
+@mixin large-text {
+  @include default-font;
+  font-size: 40px;
+}
+
+/* Mixins can safely be used with other css rules, the precedence rules of CSS are uphold,
+   what is defined later wins */ 
+.header {
+  @include large-text;
+  @include pad;
+  background-color: lightgray;
+}
+/* Mixin are great to make sense of the browser prefix css mess */
+@mixin border-radius($radius){
+ -webkit-border-radius: $radius;
+  -khtml-border-radius: $radius;
+    -moz-border-radius: $radius;
+         border-radius: $radius; 
+}
+ 
+/* Include the border-radius mixin to make the button have rounded edges */
+.rounded {
+  @include border-radius(10px);
+  background-color: beige;
+  @include pad;
+}
