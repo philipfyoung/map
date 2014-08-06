@@ -14,7 +14,9 @@
  *= require_self
  *= require mapbox
  */
-
+.leaflet-control-layers {
+  background-color: black;
+}
 
 @media only screen and (min-width : 50px) and (max-width : 500px)
 {

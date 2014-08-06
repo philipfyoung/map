@@ -2,4 +2,7 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 /* Body */
-
+.leaflet-control-layers {
+  background-color: black;
+}
+/* <div class="leaflet-control-layers leaflet-control" aria-haspopup="true"><a class="leaflet-control-layers-toggle" href="#" title="Layers"></a><form class="leaflet-control-layers-list"><div class="leaflet-control-layers-base"><label><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers" checked="checked"><span> OSM Mapnik</span></label><label><input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers"><span> Landscape</span></label></div><div class="leaflet-control-layers-separator"></div><div class="leaflet-control-layers-overlays"><label><input type="checkbox" class="leaflet-control-layers-selector"><span> Administration</span></label><label><input type="checkbox" class="leaflet-control-layers-selector"><span> Academic</span></label><label><input type="checkbox" class="leaflet-control-layers-selector"><span> Parking</span></label><label><input type="checkbox" class="leaflet-control-layers-selector"><span> ZipCar</span></label><label><input type="checkbox" class="leaflet-control-layers-selector"><span> TransLoc</span></label></div></form></div> */

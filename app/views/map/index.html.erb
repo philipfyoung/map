@@ -6,14 +6,14 @@
     $(window).on("resize", function() {
     $("#map").height($(window).height() - 45).width($(window).width());
     //map.invalidateSize();
-}).trigger("resize");
+    }).trigger("resize");
 
   
-  // call for mapbox map
-//   var map = L.mapbox.map('map', "pyoung123.j4phf8n8").setView([
-//   41.3
-//   -72.9
-// ], 10)
+    // call for mapbox map
+    //   var map = L.mapbox.map('map', "pyoung123.j4phf8n8").setView([
+    //   41.3
+    //   -72.9
+    // ], 10)
 
     var api_key = "ID6qBkdNHXmshWA5hjc7QhlI9hZbp13LqVEjsn7hnIPmmJPjGm";
     var bboard = {
@@ -40,21 +40,20 @@
               "OSM Mapnik": osmMap,
               "Landscape": landMap
             };
-
+            
     bboard.routes.blue_day = ["4000346", "4000342", "4000386", "4000354", "4000374"];
-
-                  
+               
     function initializeApp(){
       console.info("Initializing App");
       initializeMap('map');
 
-      //refreshRouteSegmentCollection("blue_day",displayRoute);
-      //displayBusStops();
-      //updateBusLocations();
-      //displayBusLocations();
+      refreshRouteSegmentCollection("blue_day",displayRoute);
+      displayBusStops();
+      updateBusLocations();
+      displayBusLocations();
 
       window.setInterval(function(){
-        //updateBusLocations();
+         updateBusLocations();
       }, 1000);
     }
 
@@ -70,8 +69,8 @@
       
       bboard.map = L.map('map', {
               layers: [osmMap],
-        center: bounds.getCenter()
-            }).setView([41.311182,-72.925793], 14);
+              center: bounds.getCenter()
+              }).setView([41.311182,-72.925793], 14);
             
       
             // Layers for Control
@@ -89,8 +88,16 @@
             L.marker([41.3159894, -72.92874813]).bindPopup('Rose Center').addTo(admin);
       
             // markers
+            // academic
+            L.marker([41.30234945, -72.93272585]).bindPopup('Boyer Center').addTo(academic),
+            L.marker([41.30212578, -72.93397039]).bindPopup('Brady Memorial Laboratory').addTo(academic),
+            L.marker([41.3025993, -72.93496549]).bindPopup('Clinic Building').addTo(academic),
+            L.marker([41.30230915, -72.93566018]).bindPopup('Dana Clinic Building').addTo(academic);
+      
+            // markers
             // transloc
-              
+            // ??
+      
             // overlays - Text 
             var overlays = {
               "Administration": admin,
@@ -104,8 +111,7 @@
             L.control.layers(baseLayers, overlays).addTo(bboard.map);
             
     };
-    
-    
+       
     var refreshStopsData = function(){
       $.ajax({
         url: "https://transloc-api-1-2.p.mashape.com/stops.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000",
@@ -126,7 +132,6 @@
     var displayArrivalTimes = function(){
       //&stops=4013038
     }
-
 
     var displayRoute = function(route_segment_keys){
       $.each(route_segment_keys, function(k,v){
@@ -156,68 +161,23 @@
         xhr.setRequestHeader("X-Mashape-Authorization", api_key);
     }
       });
-    }
+    } 
 
-//     function decodeLine (encoded) {
-//   var len = encoded.length;
-//   var index = 0;
-//   var array = [];
-//   var lat = 0;
-//   var lng = 0;
-
-//   while (index < len) {
-//     var b;
-//     var shift = 0;
-//     var result = 0;
-//     do {
-//       b = encoded.charCodeAt(index++) - 63;
-//       result |= (b & 0x1f) << shift;
-//       shift += 5;
-//     } while (b >= 0x20);
-//     var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-//     lat += dlat;
-
-//     shift = 0;
-//     result = 0;
-//     do {
-//       b = encoded.charCodeAt(index++) - 63;
-//       result |= (b & 0x1f) << shift;
-//       shift += 5;
-//     } while (b >= 0x20);
-//     var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-//     lng += dlng;
-
-//     array.push([lat * 1e-5, lng * 1e-5]);
-//   }
-
-//   return array;
-// }
-
-//             Object.size = function(obj) {
-//     var size = 0, key;
-//     for (key in obj) {
-//         if (obj.hasOwnProperty(key)) size++;
-//     }
-//     return size;
-// };      
-            
-
+    // takes in encoded segments - decodes to lat/lng - adds polyline to leaflet
     function addPolylineFromEncodedString(encodedString){
       $.each(encodedString, function(k, v) {
-        var a = [];
-        a = L.Polyline.fromEncoded(encodedString[k]);
-        //console.log(a.getLatLngs(), encodedString[k]);
-        console.log(a);
-        console.log(a._latlngs[0].lat);
-        console.log(a._latlngs[0].lng);
-            bboard.blue_route_polyline.map.addLayer(new L.polyline(a._latlngs, {color: 'red'}).addTo(map));
+        var decodedString = L.Polyline.fromEncoded(encodedString[k]);
+        var poly = L.polyline(decodedString._latlngs, {
+              color: 'red',
+                weight: 5,
+                opacity: .8,
+                dashArray: '0,0',
+                //lineJoin: 'round'
+            }).addTo(bboard.map);
              });
-
-//       for (var i = 0; i < uep.length -1; i++){ 
-//         var p1 = new L.LatLng(uep[i][0], uep[i][1]);
-//         var p2 = new L.LatLng(uep[i+1][0], uep[i+1][1]);
-//         bboard.blue_route_polyline.addLayer(new L.Polyline([p1,p2]));
-//       };
+//         console.log(decodedString);
+//         console.log(decodedString._latlngs[0].lat);
+//         console.log(decodedString._latlngs[0].lng);
     } 
 
     function displayBusStops(){
@@ -242,7 +202,9 @@
       bboard.stopsLayer = new L.LayerGroup();
       $.each(bboard.bus_stops, function(k, bus_stop){
         var ll = new L.LatLng(bus_stop['location']['lat'], bus_stop['location']['lng']);
-        bboard.stopsLayer.addLayer(new L.CircleMarker(ll));
+        bboard.stopsLayer.addLayer(new L.CircleMarker(ll, {
+          radius: 5
+        }));
       });
       bboard.map.addLayer(bboard.stopsLayer);
     }
