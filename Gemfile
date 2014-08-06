@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
+gem 'activesupport', '~> 4.1.4'
+gem 'httparty', '~> 0.13.1'
+gem 'polylines'
 gem 'modernizr-rails'
 gem 'geocoder'
 gem "nifty-generators", :group => :development

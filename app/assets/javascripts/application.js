@@ -15,6 +15,7 @@
 //= require turbolinks
 //= require foundation
 //= require modernizr
+//= require mapbox.js
 //= require_tree .
 $(function() {
   $(document).foundation();

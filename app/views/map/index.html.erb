@@ -1,2 +1,285 @@
-<h1>Map#index</h1>
-<p>Find me in app/views/map/index.html.erb</p>
+<div id='map' class='group dark'></div>
+<script type='text/javascript'>
+  
+          $(document).ready(function() {
+  // Adjustment for map height and width based on windows height and width            
+    $(window).on("resize", function() {
+    $("#map").height($(window).height() - 45).width($(window).width());
+    //map.invalidateSize();
+}).trigger("resize");
+
+  
+  // call for mapbox map
+//   var map = L.mapbox.map('map', "pyoung123.j4phf8n8").setView([
+//   41.3
+//   -72.9
+// ], 10)
+
+    var api_key = "ID6qBkdNHXmshWA5hjc7QhlI9hZbp13LqVEjsn7hnIPmmJPjGm";
+    var bboard = {
+      routes : {},
+      points : [],
+      segments : {},
+      bus_stops : {},
+      bus_stop_arrival : {},
+      buses : [],
+      busLayer : new L.LayerGroup()
+    };
+    var osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>',
+        thunLink = '<a href="http://thunderforest.com/">Thunderforest</a>';
+
+    var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        osmAttrib = '&copy; ' + osmLink + ' Contributors',
+        landUrl = 'http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png',
+        thunAttrib = '&copy; '+osmLink+' Contributors & '+thunLink;
+
+    var osmMap = L.tileLayer(osmUrl, {attribution: osmAttrib}),
+        landMap = L.tileLayer(landUrl, {attribution: thunAttrib});
+            
+    var baseLayers = {
+              "OSM Mapnik": osmMap,
+              "Landscape": landMap
+            };
+
+    bboard.routes.blue_day = ["4000346", "4000342", "4000386", "4000354", "4000374"];
+
+                  
+    function initializeApp(){
+      console.info("Initializing App");
+      initializeMap('map');
+
+      //refreshRouteSegmentCollection("blue_day",displayRoute);
+      //displayBusStops();
+      //updateBusLocations();
+      //displayBusLocations();
+
+      window.setInterval(function(){
+        //updateBusLocations();
+      }, 1000);
+    }
+
+    var initializeMap = function(targetEl){
+      // initialize the map on the "map" div with a given center and zoom
+      bboard.boundingBox = {"ne":{"lat":41.338347106423775,"lng":-72.87583351135254},
+                            "sw":{"lat":41.29709015106298, "lng":-72.9616641998291}};
+
+      var northEast = new L.LatLng(bboard.boundingBox.ne['lat'],bboard.boundingBox.ne['lng']),
+          southWest = new L.LatLng(bboard.boundingBox.sw['lat'],bboard.boundingBox.sw['lng']),
+          bounds    = new L.LatLngBounds(southWest, northEast);
+
+      
+      bboard.map = L.map('map', {
+              layers: [osmMap],
+        center: bounds.getCenter()
+            }).setView([41.311182,-72.925793], 14);
+            
+      
+            // Layers for Control
+            var transLoc = new L.LayerGroup();
+            var academic = new L.LayerGroup();
+            var parking = new L.LayerGroup();
+            var zipcar = new L.LayerGroup();
+            var admin = new L.LayerGroup();
+      
+            // markers
+            // admin
+            L.marker([41.32242155, -72.92209625]).bindPopup('Betts House').addTo(admin),
+            L.marker([41.32192199, -72.92140961]).bindPopup('Greenberg Conference Center').addTo(admin),
+            L.marker([41.30992934, -72.93112189]).bindPopup('Rose Alumni House').addTo(admin),
+            L.marker([41.3159894, -72.92874813]).bindPopup('Rose Center').addTo(admin);
+      
+            // markers
+            // transloc
+              
+            // overlays - Text 
+            var overlays = {
+              "Administration": admin,
+              "Academic": academic,
+              "Parking": parking,
+              "ZipCar": zipcar,
+              "TransLoc": transLoc
+            };
+            
+            // adds layer to map
+            L.control.layers(baseLayers, overlays).addTo(bboard.map);
+            
+    };
+    
+    
+    var refreshStopsData = function(){
+      $.ajax({
+        url: "https://transloc-api-1-2.p.mashape.com/stops.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000",
+        dataType: 'jsonp',
+        success: function(json){
+          console.log("Success: Updated route segment data", json);
+          bboard.bus_stop_arrivals = json['data'];
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          console.log("Stop data error", jqXHR, textStatus, errorThrown);
+        },
+        beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-Mashape-Authorization", api_key);
+    }
+      });
+    };
+
+    var displayArrivalTimes = function(){
+      //&stops=4013038
+    }
+
+
+    var displayRoute = function(route_segment_keys){
+      $.each(route_segment_keys, function(k,v){
+        console.log("Building segment: ", bboard.segments[v]);
+        bboard.blue_route_polyline = new L.MultiPolyline([], {color: '#03f', weight: 5, opacity: 0.04});
+       addPolylineFromEncodedString(bboard.segments[v]);
+        bboard.map.addLayer(bboard.blue_route_polyline);
+      });
+    }
+
+    function refreshRouteSegmentCollection(route, callback){
+     $.ajax({
+        url: "https://transloc-api-1-2.p.mashape.com/segments.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000&routes=4000346%2C4000342%2C4000386%2C4000354%2C4000374",
+        dataType: 'json',
+        success:function(json){
+          console.log("Success: Updated route segment data", json['data']);
+          bboard.segments = json['data'];
+          addPolylineFromEncodedString(bboard.segments);
+          if(callback){
+            callback(bboard.routes[route]);
+          }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert("Segment data error");
+        },
+        beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-Mashape-Authorization", api_key);
+    }
+      });
+    }
+
+//     function decodeLine (encoded) {
+//   var len = encoded.length;
+//   var index = 0;
+//   var array = [];
+//   var lat = 0;
+//   var lng = 0;
+
+//   while (index < len) {
+//     var b;
+//     var shift = 0;
+//     var result = 0;
+//     do {
+//       b = encoded.charCodeAt(index++) - 63;
+//       result |= (b & 0x1f) << shift;
+//       shift += 5;
+//     } while (b >= 0x20);
+//     var dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+//     lat += dlat;
+
+//     shift = 0;
+//     result = 0;
+//     do {
+//       b = encoded.charCodeAt(index++) - 63;
+//       result |= (b & 0x1f) << shift;
+//       shift += 5;
+//     } while (b >= 0x20);
+//     var dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+//     lng += dlng;
+
+//     array.push([lat * 1e-5, lng * 1e-5]);
+//   }
+
+//   return array;
+// }
+
+//             Object.size = function(obj) {
+//     var size = 0, key;
+//     for (key in obj) {
+//         if (obj.hasOwnProperty(key)) size++;
+//     }
+//     return size;
+// };      
+            
+
+    function addPolylineFromEncodedString(encodedString){
+      $.each(encodedString, function(k, v) {
+        var a = [];
+        a = L.Polyline.fromEncoded(encodedString[k]);
+        //console.log(a.getLatLngs(), encodedString[k]);
+        console.log(a);
+        console.log(a._latlngs[0].lat);
+        console.log(a._latlngs[0].lng);
+            bboard.blue_route_polyline.map.addLayer(new L.polyline(a._latlngs, {color: 'red'}).addTo(map));
+             });
+
+//       for (var i = 0; i < uep.length -1; i++){ 
+//         var p1 = new L.LatLng(uep[i][0], uep[i][1]);
+//         var p2 = new L.LatLng(uep[i+1][0], uep[i+1][1]);
+//         bboard.blue_route_polyline.addLayer(new L.Polyline([p1,p2]));
+//       };
+    } 
+
+    function displayBusStops(){
+     $.ajax({
+        url:"https://transloc-api-1-2.p.mashape.com/stops.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000",
+        dataType: 'json',
+        success:function(json){
+          console.log("Success: Updated bus stop data");
+          bboard.bus_stops = json['data'];
+          buildStops();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert("Bus Stop data error");
+        },
+        beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-Mashape-Authorization", api_key);
+    }
+      }); 
+    }
+
+    function buildStops(){
+      bboard.stopsLayer = new L.LayerGroup();
+      $.each(bboard.bus_stops, function(k, bus_stop){
+        var ll = new L.LatLng(bus_stop['location']['lat'], bus_stop['location']['lng']);
+        bboard.stopsLayer.addLayer(new L.CircleMarker(ll));
+      });
+      bboard.map.addLayer(bboard.stopsLayer);
+    }
+
+    function updateBusLocations(){
+     $.ajax({
+        url:"https://transloc-api-1-2.p.mashape.com/vehicles.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000&routes=4000346%2C4000342%2C4000386%2C4000354%2C3000374",
+        dataType: 'json',
+        success:function(json){
+          bboard.buses = [];
+          bboard.busLayer.clearLayers();
+
+          $.each(json['data']['128'], function(k,v){
+            var ll = new L.LatLng(v['location']['lat'], v['location']['lng']);
+            var busMarker = new L.Marker(ll, {color:'#123'});
+            bboard.buses.push(busMarker);
+          });
+          console.log(json['data']);
+          displayBusLocations();
+        },
+        error:function(jqXHR, textStatus, errorThrown){
+         console.log(jqXHR);
+          
+        },
+        beforeSend: function(xhr) {
+      xhr.setRequestHeader("X-Mashape-Authorization", api_key);
+    }
+      });
+    }
+
+    function displayBusLocations(){
+      $.each(bboard.buses, function(key, bus){ 
+        bboard.busLayer.addLayer(bus);
+      });
+      bboard.map.addLayer(bboard.busLayer);
+    }
+
+    $.ready(initializeApp());
+          });
+</script>

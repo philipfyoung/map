@@ -41,8 +41,10 @@
 main {
   @include twelve-columns;
   background-color: #eee;
+  padding: 0;
   }
 section {
   @extend .row;
   margin-top: 20px;
   }
+
