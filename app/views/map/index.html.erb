@@ -79,20 +79,45 @@
             var parking = new L.LayerGroup();
             var zipcar = new L.LayerGroup();
             var admin = new L.LayerGroup();
+            
+            var markerAdmin = L.icon({
+                iconUrl: 'assets/admin.png',
+                //iconRetinaUrl: 'my-icon@2x.png',
+                iconSize: [30, 30]
+            });
+      
+            var markerParking = L.icon({
+                iconUrl: 'assets/parking.png',
+                //iconRetinaUrl: 'my-icon@2x.png',
+                iconSize: [30, 30]
+            });
+      
+             var markerAcademic = L.icon({
+                iconUrl: 'assets/academic.png',
+                //iconRetinaUrl: 'my-icon@2x.png',
+                iconSize: [30, 30]
+            });
       
             // markers
             // admin
-            L.marker([41.32242155, -72.92209625]).bindPopup('Betts House').addTo(admin),
-            L.marker([41.32192199, -72.92140961]).bindPopup('Greenberg Conference Center').addTo(admin),
-            L.marker([41.30992934, -72.93112189]).bindPopup('Rose Alumni House').addTo(admin),
-            L.marker([41.3159894, -72.92874813]).bindPopup('Rose Center').addTo(admin);
+            L.marker([41.32242155, -72.92209625], { icon: markerAdmin }).bindPopup('Betts House').addTo(admin),
+            L.marker([41.32192199, -72.92140961], { icon: markerAdmin }).bindPopup('Greenberg Conference Center').addTo(admin),
+            L.marker([41.30992934, -72.93112189], { icon: markerAdmin }).bindPopup('Rose Alumni House').addTo(admin),
+            L.marker([41.3159894, -72.92874813], { icon: markerAdmin }).bindPopup('Rose Center').addTo(admin);
+      
+            // markers
+            // parking
+            L.marker([41.30799113, -72.9325515], { icon: markerParking }).bindPopup('Chapel-York Garage').addTo(parking),
+            L.marker([41.30193839, -72.936261], { icon: markerParking }).bindPopup('Howard Avenue Garage').addTo(parking),
+            L.marker([41.31787902, -72.924757], { icon: markerParking }).bindPopup('Prospect-Sachem Garage').addTo(parking),
+            L.marker([41.31941002, -72.92033136], { icon: markerParking }).bindPopup('Pierson-Sage Garage').addTo(parking);
       
             // markers
             // academic
-            L.marker([41.30234945, -72.93272585]).bindPopup('Boyer Center').addTo(academic),
-            L.marker([41.30212578, -72.93397039]).bindPopup('Brady Memorial Laboratory').addTo(academic),
-            L.marker([41.3025993, -72.93496549]).bindPopup('Clinic Building').addTo(academic),
-            L.marker([41.30230915, -72.93566018]).bindPopup('Dana Clinic Building').addTo(academic);
+            L.marker([41.30234945, -72.93272585], { icon: markerAcademic }).bindPopup('Boyer Center').addTo(academic),
+            L.marker([41.30212578, -72.93397039], { icon: markerAcademic }).bindPopup('Brady Memorial Laboratory').addTo(academic),
+            L.marker([41.3025993, -72.93496549], { icon: markerAcademic }).bindPopup('Clinic Building').addTo(academic),
+            L.marker([41.30230915, -72.93566018], { icon: markerAcademic }).bindPopup('Dana Clinic Building').addTo(academic);
       
             // markers
             // transloc
@@ -109,7 +134,13 @@
             
             // adds layer to map
             L.control.layers(baseLayers, overlays).addTo(bboard.map);
-            
+      
+            // centers map on marker click
+            bboard.map.on('popupopen', function(e) {
+                var px = bboard.map.project(e.popup._latlng);
+                px.y -= e.popup._container.clientHeight/2
+                bboard.map.panTo(bboard.map.unproject(px),{animate: true});
+            });
     };
        
     var refreshStopsData = function(){
