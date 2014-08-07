@@ -47,10 +47,10 @@
       console.info("Initializing App");
       initializeMap('map');
 
+      refreshRouteSegmentCollection("blue_day",displayRoute);
       displayBusLocations();
       displayBusStops();
       updateBusLocations();
-      refreshRouteSegmentCollection("blue_day",displayRoute);
 
       window.setInterval(function(){ 
         updateBusLocations();
@@ -174,7 +174,7 @@
         url: "https://transloc-api-1-2.p.mashape.com/stops.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000",
         dataType: 'jsonp',
         success: function(json){
-          console.log("Success: Updated route segment data", json);
+          //console.log("Success: Updated route segment data", json);
           bboard.bus_stop_arrivals = json['data'];
         },
         error: function(jqXHR, textStatus, errorThrown){
@@ -192,7 +192,7 @@
 
     var displayRoute = function(route_segment_keys){
       $.each(route_segment_keys, function(k,v){
-        console.log("Building segment: ", bboard.segments[v]);
+        //console.log("Building segment: ", bboard.segments[v]);
         bboard.blue_route_polyline = new L.MultiPolyline([], {color: '#03f', weight: 5, opacity: 0.04});
        addPolylineFromEncodedString(bboard.segments[v]);
         bboard.map.addLayer(bboard.blue_route_polyline);
@@ -204,7 +204,7 @@
         url: "https://transloc-api-1-2.p.mashape.com/segments.json?agencies=yale&callback=call&geo_area=41.3%2C-72.9%7C5000&routes=4000346%2C4000342%2C4000386%2C4000354%2C4000374",
         dataType: 'json',
         success:function(json){
-          console.log("Success: Updated route segment data", json['data']);
+          //console.log("Success: Updated route segment data", json['data']);
           bboard.segments = json['data'];
           addPolylineFromEncodedString(bboard.segments);
           if(callback){
@@ -273,16 +273,25 @@
         success:function(json){
           bboard.buses = [];
           bboard.busLayer.clearLayers();
+          var markerShuttle = L.icon({
+                iconUrl: 'assets/shuttle_stops.png',
+                //iconRetinaUrl: 'my-icon@2x.png',
+                iconSize: [30, 30]
+            });
 
           $.each(json['data']['128'], function(k,v){
             var ll = new L.LatLng(v['location']['lat'], v['location']['lng']);
-            var busMarker = new L.Marker(ll, {color:'#123'});
+            var busMarker = new L.Marker(ll, {
+              color:'#123',
+              icon: markerShuttle
+            });
             bboard.buses.push(busMarker);
           });
           console.log(json['data']);
           displayBusLocations();
         },
         error:function(jqXHR, textStatus, errorThrown){
+          console.log("error");
          console.log(jqXHR);
           
         },
