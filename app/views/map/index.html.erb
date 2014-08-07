@@ -47,13 +47,28 @@
       console.info("Initializing App");
       initializeMap('map');
 
-      refreshRouteSegmentCollection("blue_day",displayRoute);
+      displayBusLocations();
       displayBusStops();
       updateBusLocations();
-      displayBusLocations();
+      refreshRouteSegmentCollection("blue_day",displayRoute);
 
-      window.setInterval(function(){
-         updateBusLocations();
+      window.setInterval(function(){ 
+        updateBusLocations();
+//         if(bboard.map.hasLayer(overlays['TransLoc'])) {
+//            updateBusLocations();
+//            displayBusLocations();
+//            displayBusStops();
+//            updateBusLocations();
+//            refreshRouteSegmentCollection("blue_day",displayRoute); 
+//           console.log(bboard.map.hasLayer(overlays['TransLoc']));
+//         } else {
+//              bboard.map.removeLayer(overlays['TransLoc']);
+//           console.log(bboard.map.hasLayer(overlays['TransLoc']));
+//        }
+          
+        
+        
+         //checkZoomLevel();
       }, 1000);
     }
 
@@ -72,6 +87,17 @@
               center: bounds.getCenter()
               }).setView([41.311182,-72.925793], 14);
             
+            // fullscreen
+            L.control.fullscreen().addTo(bboard.map);
+            // geolocation
+            L.control.locate().addTo(bboard.map, {
+              options: {
+                markerStyle: {
+                  radius: 4
+                }
+              }
+            });
+      
       
             // Layers for Control
             var transLoc = new L.LayerGroup();
@@ -124,7 +150,7 @@
             // ??
       
             // overlays - Text 
-            var overlays = {
+            overlays = {
               "Administration": admin,
               "Academic": academic,
               "Parking": parking,
